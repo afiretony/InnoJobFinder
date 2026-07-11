@@ -243,16 +243,16 @@ def run_pipeline(hours: int = 0, no_tailor: bool = False):
 
 
 def main():
-    import os
     import uvicorn
     # Loopback by default: the dashboard has NO authentication. Only bind wider
     # than 127.0.0.1 on a network you trust (set JOBFINDER_HOST=0.0.0.0), and put
     # an authenticating reverse proxy in front of any public exposure.
+    # JOBFINDER_PORT lets you run a second instance without a port clash.
     host = os.environ.get("JOBFINDER_HOST", "127.0.0.1")
-    uvicorn.run(app, host=host, port=8765, log_level="warning")
+    port = int(os.environ.get("JOBFINDER_PORT", "8765"))
+    print(f"InnoJobFinder dashboard: http://{host}:{port}")
+    uvicorn.run(app, host=host, port=port, log_level="warning")
 
 
 if __name__ == "__main__":
-    host = os.environ.get("JOBFINDER_HOST", "127.0.0.1")
-    print(f"InnoJobFinder dashboard: http://{host}:8765")
     main()

@@ -90,6 +90,9 @@ preview the tailored CV inline, copy the cold-email draft, trigger a tailor or a
 full scan, and mark jobs applied or dismissed. It also shows live progress of any
 run (including scheduled ones).
 
+Environment overrides: `JOBFINDER_HOST` (bind address) and `JOBFINDER_PORT`
+(default `8765` — set it to run a second instance without a port clash).
+
 > **Security:** the dashboard has **no authentication**. It binds `127.0.0.1`
 > (loopback) by default. Only expose it wider (`JOBFINDER_HOST=0.0.0.0`) on a
 > network you trust, and put an authenticating reverse proxy in front of any
