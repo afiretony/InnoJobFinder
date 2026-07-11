@@ -1,0 +1,11 @@
+# Runs the pipeline every 2 hours. Install as ~/.config/systemd/user/jobfinder.timer
+# then: systemctl --user enable --now jobfinder.timer
+[Unit]
+Description=InnoJobFinder pipeline schedule
+
+[Timer]
+OnCalendar=*-*-* 00/2:10:00
+Persistent=true
+
+[Install]
+WantedBy=timers.target

@@ -1,0 +1,451 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>InnoJobFinder</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎯</text></svg>">
+<style>
+  :root {
+    --bg: #f6f7f9; --card: #fff; --text: #1a1d21; --muted: #6b7280;
+    --border: #e5e7eb; --accent: #2563eb; --accent-soft: #eff6ff;
+    --good: #16a34a; --mid: #d97706; --bad: #9ca3af; --paper-bg: #eceef1;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #101216; --card: #1a1d23; --text: #e5e7eb; --muted: #9ca3af;
+      --border: #2a2f38; --accent: #60a5fa; --accent-soft: #1e2a3f;
+      --good: #4ade80; --mid: #fbbf24; --bad: #6b7280; --paper-bg: #0b0d10;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 14px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+         background: var(--bg); color: var(--text); }
+  header { display: flex; align-items: center; gap: 16px; padding: 14px 20px;
+           background: var(--card); border-bottom: 1px solid var(--border);
+           position: sticky; top: 0; z-index: 10; flex-wrap: wrap; }
+  header h1 { font-size: 16px; margin: 0 8px 0 0; }
+  .counts { color: var(--muted); font-size: 13px; }
+  .spacer { flex: 1; }
+  button { font: inherit; padding: 6px 12px; border-radius: 8px; border: 1px solid var(--border);
+           background: var(--card); color: var(--text); cursor: pointer; white-space: nowrap; }
+  button:hover { border-color: var(--accent); }
+  button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  button.ghost { border-color: transparent; color: var(--accent); }
+  button:disabled { opacity: .5; cursor: default; }
+  .filters { display: flex; gap: 8px; padding: 12px 20px; flex-wrap: wrap; align-items: center; }
+  .chip { padding: 5px 12px; border-radius: 999px; border: 1px solid var(--border);
+          background: var(--card); cursor: pointer; font-size: 13px; color: var(--muted); }
+  .chip.active { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+  .chip b { font-weight: 700; margin-left: 3px; opacity: .8; }
+  .catrow { padding-top: 0; }
+  .flabel { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .05em;
+            align-self: center; margin-right: 2px; }
+  input[type=search] { font: inherit; padding: 6px 10px; border-radius: 8px;
+          border: 1px solid var(--border); background: var(--card); color: var(--text); width: 220px; }
+  main { display: grid; grid-template-columns: minmax(380px, 4fr) minmax(0, 5fr);
+         gap: 16px; padding: 0 20px 20px; align-items: start; }
+  @media (max-width: 980px) { main { grid-template-columns: 1fr; } }
+  .list { display: flex; flex-direction: column; gap: 8px; }
+  .job { background: var(--card); border: 1px solid var(--border); border-radius: 10px;
+         padding: 10px 14px; cursor: pointer; display: flex; gap: 12px; align-items: center; }
+  .job:hover, .job.sel { border-color: var(--accent); }
+  .score { min-width: 34px; height: 34px; border-radius: 8px; display: flex; align-items: center;
+           justify-content: center; font-weight: 700; color: #fff; background: var(--bad); }
+  .score.hi { background: var(--good); } .score.md { background: var(--mid); }
+  .job .t { font-weight: 600; } .job .c { color: var(--muted); font-size: 13px; }
+  .badge { font-size: 11px; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--border);
+           color: var(--muted); margin-left: auto; white-space: nowrap; }
+  .badge.tailored { color: var(--good); border-color: var(--good); }
+  .badge.applied { color: var(--accent); border-color: var(--accent); }
+
+  .detail { background: var(--card); border: 1px solid var(--border); border-radius: 10px;
+            position: sticky; top: 64px; max-height: calc(100vh - 84px);
+            display: flex; flex-direction: column; overflow: hidden; }
+  .dhead { padding: 14px 18px 0; }
+  .dhead h2 { margin: 0 0 2px; font-size: 17px; }
+  .dhead .sub { color: var(--muted); margin-bottom: 10px; }
+  .actions { display: flex; gap: 8px; flex-wrap: wrap; padding-bottom: 12px; }
+  .tabs { display: flex; gap: 2px; padding: 0 18px; border-bottom: 1px solid var(--border); }
+  .tab { padding: 8px 14px; cursor: pointer; color: var(--muted); font-weight: 600; font-size: 13px;
+         border-bottom: 2px solid transparent; margin-bottom: -1px; }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .tab.off { display: none; }
+  .dbody { overflow-y: auto; flex: 1; }
+  .pane { padding: 14px 18px; }
+  .fit { background: var(--accent-soft); border-radius: 8px; padding: 10px 12px; margin: 0 0 12px; }
+  .kv { color: var(--muted); font-size: 13px; line-height: 1.8; }
+  pre { white-space: pre-wrap; font: 12.5px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace;
+        margin: 0; overflow-x: auto; }
+  .md { line-height: 1.6; font-size: 13.5px; overflow-wrap: break-word; }
+  .md h1, .md h2, .md h3 { margin: 14px 0 6px; line-height: 1.3; }
+  .md h1 { font-size: 17px; } .md h2 { font-size: 15px; } .md h3 { font-size: 14px; }
+  .md p { margin: 8px 0; }
+  .md ul, .md ol { margin: 6px 0; padding-left: 22px; }
+  .md li { margin: 3px 0; }
+  .md code { background: var(--accent-soft); padding: 1px 5px; border-radius: 4px;
+             font: 12px ui-monospace, Menlo, monospace; }
+  .md hr { border: none; border-top: 1px solid var(--border); margin: 12px 0; }
+  .md blockquote { margin: 8px 0; padding: 2px 12px; border-left: 3px solid var(--border);
+                   color: var(--muted); }
+
+  /* CV preview: rendered image on a neutral mat, no browser PDF chrome */
+  .cvpane { background: var(--paper-bg); padding: 18px; }
+  .cvbar { display: flex; gap: 8px; align-items: center; margin-bottom: 12px; }
+  .cvbar .hint { color: var(--muted); font-size: 12px; margin-left: auto; }
+  .cvwrap { display: flex; justify-content: center; }
+  .cv-img { width: 100%; max-width: 780px; background: #fff; border-radius: 4px; cursor: zoom-in;
+            box-shadow: 0 1px 3px rgba(0,0,0,.25), 0 8px 28px rgba(0,0,0,.18); display: block; }
+  .cv-img.zoom { max-width: none; cursor: zoom-out; }
+  .cv-loading { color: var(--muted); text-align: center; padding: 60px 0; }
+
+  /* Live activity: any jobfinder work, whether started here, by CLI, or by the timer */
+  .activity { margin: 12px 20px 0; background: var(--card); border: 1px solid var(--border);
+              border-radius: 10px; padding: 12px 14px; }
+  .activity[hidden] { display: none; }
+  .arow { display: flex; align-items: center; gap: 10px; }
+  .arow strong { font-size: 13.5px; }
+  .amuted { color: var(--muted); font-size: 12.5px; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--bad); flex: none; }
+  .dot.on { background: var(--good); animation: pulse 1.4s ease-in-out infinite; }
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .2; } }
+  .bar { height: 6px; border-radius: 999px; background: var(--border);
+         margin: 10px 0 4px; overflow: hidden; }
+  .fill { height: 100%; width: 0; background: var(--accent); border-radius: 999px;
+          transition: width .4s ease; }
+  .asec { margin-top: 10px; }
+  .alabel { font-size: 10.5px; text-transform: uppercase; letter-spacing: .05em;
+            color: var(--muted); margin-bottom: 5px; }
+  .cats { display: flex; flex-wrap: wrap; gap: 6px; }
+  .cat, .cv { font-size: 11.5px; padding: 2px 8px; border-radius: 999px;
+              border: 1px solid var(--border); color: var(--muted); }
+  .cat b { color: var(--text); font-weight: 600; }
+  .cv.current { color: var(--good); border-color: var(--good); }
+  .cv.stale { color: var(--mid); border-color: var(--mid); }
+
+  .empty { color: var(--muted); padding: 40px; text-align: center; }
+  a { color: var(--accent); }
+  .toast { position: fixed; bottom: 20px; right: 20px; background: var(--text); color: var(--bg);
+           padding: 10px 16px; border-radius: 8px; opacity: 0; transition: opacity .3s; z-index: 20; }
+  .toast.show { opacity: 1; }
+</style>
+</head>
+<body>
+<header>
+  <h1>InnoJobFinder</h1>
+  <span class="counts" id="counts">loading…</span>
+  <span class="spacer"></span>
+  <button id="scanBtn" class="primary" onclick="runScan()">Scan now</button>
+  <button onclick="load()">Refresh</button>
+</header>
+
+<section class="activity" id="activity" hidden>
+  <div class="arow">
+    <span class="dot" id="actDot"></span>
+    <strong id="actTitle">Idle</strong>
+    <span class="amuted" id="actSub"></span>
+    <span class="spacer"></span>
+    <span class="amuted" id="actPct"></span>
+  </div>
+  <div class="bar"><div class="fill" id="actFill"></div></div>
+  <div class="asec">
+    <div class="alabel">Categories</div>
+    <div class="cats" id="actCats"></div>
+  </div>
+  <div class="asec">
+    <div class="alabel">Generic CVs</div>
+    <div class="cats" id="actCvs"></div>
+  </div>
+</section>
+
+<div class="filters">
+  <span class="chip" data-f="">All</span>
+  <span class="chip active" data-f="actionable">Actionable</span>
+  <span class="chip" data-f="matched">Matched</span>
+  <span class="chip" data-f="tailored">Tailored</span>
+  <span class="chip" data-f="applied">Applied</span>
+  <span class="chip" data-f="dismissed">Dismissed</span>
+  <span class="chip" data-f="error">Errors</span>
+  <input type="search" id="q" placeholder="Search title / company…" oninput="render()">
+</div>
+
+<div class="filters catrow" id="catFilter">
+  <span class="flabel">Category</span>
+</div>
+
+<main>
+  <div class="list" id="list"></div>
+  <div class="detail" id="detail"><div class="empty">Select a job</div></div>
+</main>
+<div class="toast" id="toast"></div>
+
+<script>
+let jobs = [], filter = 'actionable', category = '', selected = null, curJob = null, curTab = 'overview';
+let progTimer = null, progBusy = null, wasBusy = false;
+
+// Human-readable names for the classifier's category slugs.
+const CAT_LABELS = {
+  forward_deployed: 'Forward-deployed', ai_llm_engineer: 'AI / LLM',
+  inference_optimization: 'Inference opt', fullstack_product: 'Full-stack',
+  robotics_perception: 'Robotics / perception', ml_research: 'ML research',
+  general_swe: 'General SWE', unknown: 'Unknown', __none__: 'Unclassified',
+};
+const catLabel = c => CAT_LABELS[c] || c || 'Unclassified';
+
+const $ = id => document.getElementById(id);
+const esc = s => (s || '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+// Minimal markdown -> HTML (headings, bold/italic, links, lists, code, hr, quotes)
+function md(src) {
+  const inline = s => esc(s)
+    .replace(/`([^`]+)`/g, '<code>$1</code>')
+    .replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>')
+    .replace(/(^|[^*\w])\*([^*\s][^*]*)\*/g, '$1<i>$2</i>')
+    .replace(/\[([^\]]+)\]\((https?:[^)\s]+)\)/g, '<a href="$2" target="_blank">$1</a>')
+    .replace(/(^|[\s(])(https?:\/\/[^\s<)]+)/g, '$1<a href="$2" target="_blank">$2</a>');
+  const out = []; let list = null, para = [];
+  const flushPara = () => { if (para.length) { out.push('<p>' + para.map(inline).join('<br>') + '</p>'); para = []; } };
+  const flushList = () => { if (list) { out.push(`<${list}>` + listItems.map(i => '<li>' + inline(i) + '</li>').join('') + `</${list}>`); list = null; } };
+  let listItems = [];
+  for (const raw of (src || '').split('\n')) {
+    const line = raw.replace(/\s+$/, '');
+    let m;
+    if ((m = line.match(/^(#{1,4})\s+(.*)/))) { flushPara(); flushList(); out.push(`<h${m[1].length}>` + inline(m[2]) + `</h${m[1].length}>`); }
+    else if (/^(---+|\*\*\*+)$/.test(line.trim())) { flushPara(); flushList(); out.push('<hr>'); }
+    else if ((m = line.match(/^\s*[-*+]\s+(.*)/))) { flushPara(); if (list !== 'ul') { flushList(); list = 'ul'; listItems = []; } listItems.push(m[1]); }
+    else if ((m = line.match(/^\s*\d+[.)]\s+(.*)/))) { flushPara(); if (list !== 'ol') { flushList(); list = 'ol'; listItems = []; } listItems.push(m[1]); }
+    else if ((m = line.match(/^>\s?(.*)/))) { flushPara(); flushList(); out.push('<blockquote>' + inline(m[1]) + '</blockquote>'); }
+    else if (line.trim() === '') { flushPara(); flushList(); }
+    else para.push(line);
+  }
+  flushPara(); flushList();
+  return '<div class="md">' + out.join('') + '</div>';
+}
+
+function toast(msg) {
+  const t = $('toast'); t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+async function api(path, opts) {
+  const r = await fetch(path, opts);
+  const data = await r.json().catch(() => ({}));
+  if (!r.ok) { toast(data.error || data.detail || ('error ' + r.status)); throw new Error(); }
+  return data;
+}
+
+async function load() {
+  const qs = category ? '?category=' + encodeURIComponent(category) : '';
+  jobs = await api('/api/jobs' + qs);
+  await loadStats();
+  await loadCategories();
+  render();
+}
+
+// Build the clickable category chips from live counts. A chip re-fetches the
+// list server-side, so it reaches jobs beyond the 200 the status view holds.
+async function loadCategories() {
+  let cats;
+  try { cats = await api('/api/categories'); } catch (e) { return; }
+  const chip = (c, label, n, on) =>
+    `<span class="chip ${on ? 'active' : ''}" data-c="${esc(c)}">${esc(label)}` +
+    (n != null ? ` <b>${n}</b>` : '') + '</span>';
+  const html = ['<span class="flabel">Category</span>', chip('', 'All', null, category === '')];
+  for (const c of cats) if (c.n) html.push(chip(c.category, catLabel(c.category), c.n, category === c.category));
+  const el = $('catFilter');
+  el.innerHTML = html.join('');
+  el.querySelectorAll('.chip').forEach(ch => ch.onclick = () => {
+    if (category === ch.dataset.c) return;
+    category = ch.dataset.c;
+    load();
+  });
+}
+
+async function loadStats() {
+  const s = await api('/api/stats');
+  const b = s.by_status || {};
+  $('counts').textContent =
+    `${s.total} jobs · ${b.matched || 0} matched · ${b.tailored || 0} tailored · ` +
+    `${b.applied || 0} applied`;
+}
+
+function fmtDur(s) {
+  if (s == null) return '';
+  s = Math.floor(s);
+  const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60);
+  return h ? `${h}h ${m}m` : m ? `${m}m ${s % 60}s` : `${s}s`;
+}
+
+// Owns the Scan button and the poll cadence: it is the only thing that can see
+// work started outside the dashboard (CLI, systemd timer).
+async function loadProgress() {
+  let p;
+  try { p = await api('/api/progress'); } catch (e) { return; }
+  const c = p.classify, cvs = p.generic_cvs || {};
+  const cvPending = Object.values(cvs).filter(s => s !== 'current').length;
+  const show = p.busy || c.remaining > 0 || cvPending > 0;
+  $('activity').hidden = !show;
+
+  if (show) {
+    $('actDot').className = 'dot' + (p.busy ? ' on' : '');
+    if (p.active.length) {
+      const a = p.active[0];
+      const calls = p.model_calls;
+      $('actTitle').textContent = `Running: ${a.command}`;
+      $('actSub').textContent = `pid ${a.pid} · ${fmtDur(a.elapsed_seconds)}` +
+        (calls ? ` · ${calls} model call${calls > 1 ? 's' : ''} in flight` : '');
+    } else if (p.web_busy) {
+      $('actTitle').textContent = 'Running: dashboard task';
+      $('actSub').textContent = '';
+    } else {
+      $('actTitle').textContent = 'Idle';
+      $('actSub').textContent =
+        `${p.tiers.bespoke} bespoke · ${p.tiers.generic} generic · ${p.unscored} unscored`;
+    }
+    const pct = c.total ? Math.round(100 * c.classified / c.total) : 0;
+    $('actPct').textContent = `${c.classified}/${c.total} classified (${pct}%)`;
+    $('actFill').style.width = pct + '%';
+    $('actCats').innerHTML = Object.entries(c.by_category)
+      .map(([k, v]) => `<span class="cat">${esc(k)} <b>${v}</b></span>`).join('')
+      || '<span class="amuted">none yet</span>';
+    $('actCvs').innerHTML = Object.entries(cvs)
+      .map(([k, s]) => `<span class="cv ${s}">${esc(k)} · ${s}</span>`).join('');
+  }
+
+  $('scanBtn').disabled = !!p.busy;
+  if (wasBusy && !p.busy) { toast('Background run finished'); load(); }
+  wasBusy = p.busy;
+
+  if (progBusy !== p.busy) {   // poll fast while something is running, slowly when idle
+    progBusy = p.busy;
+    if (progTimer) clearInterval(progTimer);
+    progTimer = setInterval(loadProgress, p.busy ? 3000 : 20000);
+  }
+}
+
+function visible() {
+  const q = $('q').value.toLowerCase();
+  return jobs.filter(j => {
+    if (filter === 'actionable') { if (!['matched', 'tailored'].includes(j.status)) return false; }
+    else if (filter && j.status !== filter) return false;
+    if (q && !(`${j.title} ${j.company}`.toLowerCase().includes(q))) return false;
+    return true;
+  });
+}
+
+function scoreClass(s) { return s >= 8 ? 'hi' : s >= 7 ? 'md' : ''; }
+
+function render() {
+  const rows = visible();
+  $('list').innerHTML = rows.length ? rows.map(j => `
+    <div class="job ${selected === j.id ? 'sel' : ''}" onclick="select('${j.id}')">
+      <div class="score ${scoreClass(j.score)}">${j.score ?? '–'}</div>
+      <div style="min-width:0">
+        <div class="t">${esc(j.title)}</div>
+        <div class="c">${esc(j.company)} · ${esc(j.location || 'n/a')} · ${esc(j.site)}${j.category ? ' · ' + esc(catLabel(j.category)) : ''}</div>
+      </div>
+      <span class="badge ${j.status}">${j.status}</span>
+    </div>`).join('') : '<div class="empty">Nothing here</div>';
+}
+
+async function select(id, keepTab) {
+  selected = id; render();
+  curJob = await api('/api/jobs/' + id);
+  if (!keepTab) curTab = (curJob.files || {}).pdf ? 'cv' : 'overview';
+  renderDetail();
+}
+
+function tabButton(key, label, enabled) {
+  return `<div class="tab ${curTab === key ? 'active' : ''} ${enabled ? '' : 'off'}"
+              onclick="setTab('${key}')">${label}</div>`;
+}
+
+function setTab(key) { curTab = key; renderDetail(); }
+
+function renderDetail() {
+  const j = curJob, f = j.files || {};
+  const panes = {
+    overview: () => `
+      <div class="pane">
+        ${j.fit_summary ? `<div class="fit"><b>${j.score}/10</b> — ${esc(j.fit_summary)}</div>` : ''}
+        <div class="kv">
+          <b>Company:</b> ${esc(j.company)}<br>
+          <b>Location:</b> ${esc(j.location || 'n/a')} ${j.is_remote ? '(remote)' : ''}<br>
+          <b>Source:</b> ${esc(j.site)} · posted ${esc(j.date_posted || '?')} · found ${esc((j.discovered_at || '').slice(0, 10))}<br>
+          <b>Search:</b> ${esc(j.search_term)} (${esc(j.role_family)})<br>
+          <b>Category:</b> ${esc(catLabel(j.category))}<br>
+          <b>Status:</b> ${esc(j.status)}
+        </div>
+      </div>`,
+    cv: () => `
+      <div class="cvpane">
+        <div class="cvbar">
+          <a href="/api/pdf/${j.id}" target="_blank"><button>Open PDF ↗</button></a>
+          <a href="/api/pdf/${j.id}" download><button>Download</button></a>
+          <button onclick="act('${j.id}','open')">Open folder</button>
+          <span class="hint">click page to zoom</span>
+        </div>
+        <div class="cvwrap">
+          <img class="cv-img" src="/api/preview/${j.id}?t=${Date.parse(j.tailored_at || 0) || 0}"
+               onclick="this.classList.toggle('zoom')"
+               onerror="this.outerHTML='<div class=cv-loading>Preview unavailable — use Open PDF ↗</div>'">
+        </div>
+      </div>`,
+    email: () => `
+      <div class="pane">
+        <div style="margin-bottom:10px; display:flex; gap:8px">
+          <button class="primary" onclick="copyEmail()">Copy email</button>
+          <button onclick="act('${j.id}','email')">Regenerate email</button>
+        </div>
+        ${md(f['cold_email.md'])}
+      </div>`,
+    notes: () => `<div class="pane">${md(f['notes.md'])}</div>`,
+    jd: () => `<div class="pane">${md(j.description || '(not captured)')}</div>`,
+  };
+
+  $('detail').innerHTML = `
+    <div class="dhead">
+      <h2>${esc(j.title)}</h2>
+      <div class="sub">${esc(j.company)} · ${esc(j.location || 'n/a')} ·
+        <a href="${esc(j.url)}" target="_blank">job post ↗</a></div>
+      <div class="actions">
+        <button class="primary" onclick="act('${j.id}','tailor')">${f.pdf ? 'Re-tailor' : 'Tailor CV + email'}</button>
+        <button onclick="act('${j.id}','status/applied')">Mark applied</button>
+        <button onclick="act('${j.id}','status/dismissed')">Dismiss</button>
+      </div>
+    </div>
+    <div class="tabs">
+      ${tabButton('overview', 'Overview', true)}
+      ${tabButton('cv', 'CV', !!f.pdf)}
+      ${tabButton('email', 'Cold email', !!f['cold_email.md'])}
+      ${tabButton('notes', 'Notes & gaps', !!f['notes.md'])}
+      ${tabButton('jd', 'Job description', true)}
+    </div>
+    <div class="dbody">${panes[curTab] ? panes[curTab]() : ''}</div>`;
+  window._email = f['cold_email.md'] || '';
+}
+
+function copyEmail() { navigator.clipboard.writeText(window._email); toast('Email copied'); }
+
+async function act(id, action) {
+  const r = await api(`/api/jobs/${id}/${action}`, { method: 'POST' });
+  toast(r.message || 'Done');
+  if (action.startsWith('status')) { await load(); if (selected === id) select(id, true); }
+  if (action === 'tailor' || action === 'email') loadProgress();
+}
+
+async function runScan() {
+  const r = await api('/api/run', { method: 'POST' });
+  toast(r.message || 'started'); loadProgress();
+}
+
+document.querySelectorAll('.chip').forEach(c => c.onclick = () => {
+  document.querySelectorAll('.chip').forEach(x => x.classList.remove('active'));
+  c.classList.add('active'); filter = c.dataset.f; render();
+});
+
+load();
+loadProgress();
+</script>
+</body>
+</html>

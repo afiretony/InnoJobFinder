@@ -1,0 +1,80 @@
+# InnoJobFinder configuration — edit this to make the pipeline yours.
+
+# Who the CVs are for. This only sets the filename prefix of generated CVs
+# (e.g. "Jordan_Doe_CV_ai_llm_engineer.pdf"). Your real name, contact details,
+# and experience live in resume/profile.md and resume/cv.tex — edit those.
+candidate:
+  name: "Jordan Doe"
+
+paths:
+  # Point these at your own resume material. Relative paths resolve against the
+  # project root; absolute paths are used as-is (e.g. a separate resume repo).
+  resume_repo: ./resume                 # working dir for the tailoring agent
+  profile: ./resume/profile.md          # plain-text source of truth for your facts
+  base_cv: ./resume/cv.tex              # polished one-page LaTeX CV, the tailoring base
+  output_dir: output                    # generated CVs/emails/digests land here
+  db: data/jobs.db                      # SQLite job history (created on first run)
+
+search:
+  sites: [linkedin, indeed]   # zip_recruiter blocks scrapers with 403
+  location: "United States"
+  country_indeed: "USA"
+  is_remote: null             # null = both remote and on-site
+  results_per_term: 20
+  hours_old: 3                # look-back window per run (overlap for safety)
+  linkedin_fetch_description: true
+  # Search terms grouped by role family. Edit freely; the scanner iterates all.
+  terms:
+    edge_ai:
+      - "machine learning engineer on-device inference"
+      - "ML engineer model optimization quantization"
+      - "AI inference engineer edge deployment"
+    forward_deployed:
+      - "forward deployed engineer AI"
+      - "AI solutions engineer"
+      - "applied AI engineer customer"
+    llm_fullstack:
+      - "LLM application engineer"
+      - "generative AI engineer full stack"
+      - "AI product engineer agents"
+    embodied_ai:
+      - "embodied AI engineer"
+      - "robot learning engineer"
+      - "AI research engineer robotics"
+
+matching:
+  model: claude-haiku-4-5-20251001   # cheap + fast for scoring every run
+  batch_size: 12                     # jobs per scoring call
+  description_max_chars: 1500
+  threshold: 5                       # score >= threshold => 'matched' = worth applying to.
+                                     # Not "worth the expensive model" — see tailoring.min_score.
+  timeout_seconds: 300
+
+# Closed set of role buckets. One reusable generic CV is built per category;
+# order here is the display order in the digest. Rename/extend to fit your search.
+categories:
+  - forward_deployed
+  - ai_llm_engineer
+  - inference_optimization
+  - fullstack_product
+  - robotics_perception
+  - ml_research
+  - general_swe
+
+tailoring:
+  enabled: true
+  max_per_run: 3                     # 0 = no cap. Keep a run short enough to finish
+                                     # inside your schedule period (see deploy/systemd).
+  min_score: 8                       # bespoke per-job CV only at or above this score.
+                                     # Lower scores are served by their category's generic CV.
+  model: claude-opus-4-8             # composes the tailored CV and cold email
+  thinking_tokens: 12000             # extended thinking budget for tailoring/email runs
+  timeout_seconds: 900
+  # Optional: keep one flagship project OFF the generic CVs for categories that
+  # don't value it (it competes for one-page space). Leave name empty to disable.
+  deemphasize_project:
+    name: ""                         # e.g. "My Startup Project"
+    exclude_categories: []           # e.g. [general_swe, fullstack_product]
+
+notifications:
+  enabled: false                     # desktop notification when strong matches are found

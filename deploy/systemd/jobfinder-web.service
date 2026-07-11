@@ -1,0 +1,16 @@
+# The dashboard. Install as ~/.config/systemd/user/jobfinder-web.service
+# then: systemctl --user enable --now jobfinder-web.service
+# The dashboard has NO authentication. It binds 127.0.0.1 by default (loopback
+# only). Set JOBFINDER_HOST=0.0.0.0 to expose it on your LAN only if you trust
+# the network, and put a reverse proxy with auth in front of any public access.
+[Unit]
+Description=InnoJobFinder dashboard
+After=network-online.target
+
+[Service]
+WorkingDirectory=%h/InnoJobFinder
+ExecStart=%h/InnoJobFinder/.venv/bin/python -m jobfinder.web
+Restart=on-failure
+
+[Install]
+WantedBy=default.target

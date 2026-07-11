@@ -1,0 +1,11 @@
+# One pipeline run. Paired with jobfinder.timer.
+# Install as a systemd *user* unit: ~/.config/systemd/user/jobfinder.service
+# Adjust WorkingDirectory to wherever you cloned the repo.
+[Unit]
+Description=InnoJobFinder pipeline run
+After=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=%h/InnoJobFinder
+ExecStart=%h/InnoJobFinder/scripts/run_hourly.sh

@@ -1,0 +1,55 @@
+% EXAMPLE base CV for Jordan Doe — replace with your own.
+% Self-contained: compiles with plain `pdflatex cv.tex`, no custom class.
+% The tailoring agent COPIES this file and reshapes the copy per each job;
+% it never edits this base. Keep it to one page.
+\documentclass[10pt,letterpaper]{article}
+\usepackage[margin=0.6in]{geometry}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage[hidelinks]{hyperref}
+\usepackage{parskip}
+
+\setlist[itemize]{leftmargin=1.2em, topsep=1pt, itemsep=1pt, parsep=0pt}
+\titleformat{\section}{\large\bfseries}{}{0em}{}[\titlerule]
+\titlespacing{\section}{0pt}{6pt}{3pt}
+\pagestyle{empty}
+
+\begin{document}
+
+\begin{center}
+  {\LARGE\bfseries Jordan Doe}\\[2pt]
+  jordan.doe@example.com $\cdot$ (555) 010-0000 $\cdot$ Remote (US), open to relocation\\
+  github.com/jordandoe $\cdot$ linkedin.com/in/jordandoe
+\end{center}
+
+\section*{Summary}
+Software engineer with ~5 years building and shipping machine-learning systems,
+from data pipelines to on-device inference. Owns features end-to-end and works
+directly with the people who use them.
+
+\section*{Experience}
+\textbf{Senior Software Engineer}, Example Analytics Inc. \hfill 2022--present
+\begin{itemize}
+  \item Led a 3-person team building an internal LLM assistant that answers support questions from product docs, cutting average ticket handling time.
+  \item Built the retrieval and evaluation harness (embeddings, reranking, offline evals) and owned deployment behind a FastAPI service.
+  \item Partnered with two enterprise customers to deploy the assistant in their environments, iterating on real usage.
+\end{itemize}
+
+\textbf{Machine Learning Engineer}, Sample Robotics Co. \hfill 2020--2022
+\begin{itemize}
+  \item Trained and quantized vision models for an embedded perception stack; shipped an int8 model within the device's latency budget.
+  \item Wrote data tooling and a benchmarking rig used across the perception team.
+\end{itemize}
+
+\section*{Projects}
+\begin{itemize}
+  \item \textbf{Open-source inference toolkit} --- a small library for running quantized transformer models on CPU; a few hundred GitHub stars.
+\end{itemize}
+
+\section*{Skills}
+Python, C++, TypeScript $\cdot$ PyTorch, ONNX, quantization (PTQ/QAT), RAG, evals $\cdot$ FastAPI, Docker, SQLite/Postgres, Linux
+
+\section*{Education}
+M.S. \& B.S. Computer Science, Example State University \hfill 2018, 2020
+
+\end{document}

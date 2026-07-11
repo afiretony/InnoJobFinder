@@ -1,0 +1,21 @@
+.venv/
+logs/
+__pycache__/
+*.pyc
+.DS_Store
+
+# Runtime data and generated outputs — never commit these (they are personal).
+data/*
+!data/.gitkeep
+output/*
+!output/.gitkeep
+
+# Tailored CVs the agent generates inside the resume working dir
+resume/tailored/*
+!resume/tailored/.gitkeep
+
+# LaTeX build artifacts
+*.aux
+*.log
+*.out
+*.synctex.gz
