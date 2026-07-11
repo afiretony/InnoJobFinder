@@ -85,10 +85,67 @@ extend them to fit your search.
 make web    # http://127.0.0.1:8765
 ```
 
-Filter jobs by status and **by category**, read the fit reasoning and full JD,
-preview the tailored CV inline, copy the cold-email draft, trigger a tailor or a
-full scan, and mark jobs applied or dismissed. It also shows live progress of any
-run (including scheduled ones).
+The dashboard is where you triage. It is a single self-contained page (no build
+step, no external services) that reads the same SQLite DB the pipeline writes.
+
+![Job list, filters and category chips](docs/screenshots/dashboard.png)
+
+*(All screenshots use the bundled example profile, "Jordan Doe".)*
+
+### 1. Find the jobs worth your time
+
+Two independent filter rows, plus search:
+
+- **Status** — `Actionable` (matched + tailored) is the default and the one you
+  live in. `Matched` / `Tailored` / `Applied` / `Dismissed` / `Errors` narrow further.
+- **Category** — the role bucket the classifier read off the job description,
+  with live counts. Clicking one re-queries the database, so it reaches every job
+  in that bucket, not just the ones already loaded.
+- **Search** — plain substring match on title and company.
+
+Each row shows the 0–10 fit score, the role, and its category.
+
+![Filtering by the AI / LLM category](docs/screenshots/category-filter.png)
+
+### 2. Read the fit, then decide
+
+![Job detail with fit reasoning](docs/screenshots/job-detail.png)
+
+**Overview** gives the score and a one-line reason naming the decisive factor, so
+you can tell a real match from a keyword collision without opening the posting.
+**Job description** has the full JD. From here:
+
+- **Tailor CV + email** — generate a bespoke CV and cold-email draft for this job
+  (uses the expensive model; takes a few minutes)
+- **Mark applied** / **Dismiss** — your triage state, stored in the DB
+
+### 3. Review the tailored CV
+
+![Inline CV preview](docs/screenshots/cv-preview.png)
+
+The CV renders inline (click to zoom) so you can check it without leaving the
+page. **Open PDF**, **Download**, and **Open folder** get you the real file.
+**Notes & gaps** is worth reading before you apply: it lists what the agent led
+with, what it cut, and the requirements you honestly do *not* meet.
+
+### 4. Send it yourself
+
+![Cold email draft](docs/screenshots/cold-email.png)
+
+The email is a **draft**. The recipient line is deliberately left as a
+placeholder for you to fill in, and **nothing is ever sent or submitted by this
+tool** — you copy it and send it yourself. **Regenerate email** rewrites just the
+email if you don't like the angle.
+
+### 5. Watch a run
+
+The panel at the top appears whenever work is running — including runs started by
+the scheduler or the CLI, not just from the dashboard. It shows the live job,
+classification progress, the category breakdown, and whether each category's
+generic CV is `current`, `stale` (your `profile.md` changed since it was built),
+or `missing` (run `make generic-cvs`). **Scan now** triggers a full run.
+
+### Configuration
 
 Environment overrides: `JOBFINDER_HOST` (bind address) and `JOBFINDER_PORT`
 (default `8765` — set it to run a second instance without a port clash).
