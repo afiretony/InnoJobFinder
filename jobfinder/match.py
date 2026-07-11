@@ -33,7 +33,11 @@ def run_match(conn, cfg: dict) -> list:
 
     with open(cfg["paths"]["profile"]) as f:
         profile = f.read()
-    template = open(PROMPT_PATH).read()
+    # Constraints (seniority, target roles, location, dealbreakers) are the user's
+    # own, so they live in config.yaml rather than being baked into the prompt.
+    template = open(PROMPT_PATH).read().replace(
+        "{CONSTRAINTS}", (m.get("constraints") or "(none specified)").strip()
+    )
 
     batch, batches = [], []
     for row in new_jobs:

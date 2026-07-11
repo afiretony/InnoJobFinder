@@ -49,6 +49,21 @@ matching:
   threshold: 5                       # score >= threshold => 'matched' = worth applying to.
                                      # Not "worth the expensive model" — see tailoring.min_score.
   timeout_seconds: 300
+  # Injected verbatim into the scoring prompt. THIS IS THE MOST IMPORTANT THING
+  # TO CUSTOMIZE: it encodes your seniority, target roles, location, and
+  # dealbreakers. Without it the scores are generic. Rewrite it in your own terms.
+  constraints: |
+    - Level: ~5 years of professional experience. Ideal: mid-level and senior IC roles.
+      Score staff/principal/director roles (10+ yrs required) at most 4.
+      Score junior/new-grad roles at most 4.
+    - Target role families (anything clearly outside ALL of these caps at 5):
+      1. AI / LLM application engineering: agents, RAG, LLM integration into a product
+      2. Forward-deployed / AI solutions engineering (customer-facing)
+      3. Machine learning engineering: training, evaluation, and deployment
+      4. Inference optimization: quantization, on-device and edge deployment
+    - Location: anywhere in the US (on-site, hybrid, or remote all fine). Non-US roles score 0.
+    - Roles requiring an active US security clearance score at most 2.
+    - Internships, contract-to-hire under 6 months, and unpaid roles score 0.
 
 # Closed set of role buckets. One reusable generic CV is built per category;
 # order here is the display order in the digest. Rename/extend to fit your search.

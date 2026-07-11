@@ -1,9 +1,11 @@
-# Profile — Jordan Doe (EXAMPLE — replace with your own)
+# Profile — Jordan Doe
 
-> This is a fictional sample so the pipeline runs out of the box. Replace every
-> line with your real facts. The matcher reads this file to score jobs, and the
-> tailoring agent treats it as the source of truth — it will never claim
-> anything that isn't here. Keep it truthful and specific.
+<!--
+  Sample profile, so the pipeline runs out of the box. Swap the content below for
+  your own real experience. The matcher scores jobs against this file, and the
+  tailoring agent treats it as the source of truth: it will never put anything on
+  a CV that is not written here. Keep it truthful and specific.
+-->
 
 ## Contact
 

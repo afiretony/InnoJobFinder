@@ -126,6 +126,9 @@ are set by you in the dashboard).
   against the project root; absolute paths let you keep your resume in a separate
   repo).
 - `search.terms` — queries grouped by role family. Edit freely.
+- **`matching.constraints`** — your seniority, target role families, location, and
+  dealbreakers, injected verbatim into the scoring prompt. **Customize this first:**
+  it is what makes the scores yours rather than generic.
 - `matching.threshold` / `tailoring.min_score` — the tiering knobs above.
 - `matching.model` / `tailoring.model` — which Claude models to use.
 - `tailoring.max_per_run` — cap on bespoke CVs per run (keeps a run short enough
